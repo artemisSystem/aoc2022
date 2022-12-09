@@ -3,50 +3,28 @@ module Day9 where
 import Prelude
 
 import Control.Apply (lift2)
-import Data.Array (foldl, intercalate, length, nub, replicate)
-import Data.Either (Either(..))
+import Data.Array (foldl, length, nub, replicate)
 import Data.FastVect.Common (term)
 import Data.FastVect.FastVect (Vect)
 import Data.FastVect.FastVect as Vect
-import Data.Foldable (fold, or)
+import Data.Foldable (or)
 import Data.Monoid.Additive (Additive(..))
 import Data.Ord (abs, signum)
 import Data.Traversable (scanl)
 import Data.Vector.Polymorphic (Vector2, (><))
 import Effect (Effect)
-import Effect.Aff (Aff, error, launchAff_, throwError)
+import Effect.Aff (launchAff_)
 import Effect.Class.Console (logShow)
-import Node.Encoding (Encoding(..))
-import Node.FS.Aff (readTextFile)
-import Parsing (Parser, runParser)
+import Parsing (Parser)
 import Parsing.Combinators (optional)
-import Parsing.Combinators.Array (many)
-import Parsing.String (char, parseErrorHuman)
+import Parsing.String (char)
 import Parsing.String.Basic (intDecimal, whiteSpace)
 import QualifiedDo.Alt as Alt
-import QualifiedDo.Semigroup as S
 import QualifiedDo.Semigroupoid as Compose
 import Safe.Coerce (coerce)
+import Util (manyMonoid, newline, parseInput)
 
 type Pos = Vector2 (Additive Int)
-
--- parsing helpers
-newline ∷ Parser String Unit
-newline = void (char '\n')
-
-manyMonoid ∷ ∀ s a. Monoid a ⇒ Parser s a → Parser s a
-manyMonoid = many >>> map fold
-
-parseInput ∷ ∀ a. Parser String a → String → Aff a
-parseInput parser file = do
-  string ← readTextFile UTF8 file
-  case runParser string parser of
-    Left err → throwError $ error S.do
-      "Error parsing file: "
-      file
-      "\n"
-      intercalate "\n" $ parseErrorHuman string 5 err
-    Right a → pure a
 
 -- parsing
 direction ∷ Parser String Pos
@@ -64,8 +42,8 @@ directionLine = ado
   optional newline
   in replicate num dir
 
-inputParser ∷ Parser String (Array Pos)
-inputParser = manyMonoid directionLine
+day9Parser ∷ Parser String (Array Pos)
+day9Parser = manyMonoid directionLine
 
 -- calculation
 tooFarAway ∷ Pos → Pos → Boolean
@@ -107,5 +85,5 @@ solvePart2 = Compose.do
 
 main ∷ Effect Unit
 main = launchAff_ do
-  parseInput inputParser "input/9.txt" <#> solvePart1 >>= logShow
-  parseInput inputParser "input/9.txt" <#> solvePart2 >>= logShow
+  parseInput day9Parser "input/9.txt" <#> solvePart1 >>= logShow
+  parseInput day9Parser "input/9.txt" <#> solvePart2 >>= logShow
