@@ -10,18 +10,22 @@ import Data.FastVect.FastVect as Vect
 import Data.Foldable (or)
 import Data.Monoid.Additive (Additive(..))
 import Data.Ord (abs, signum)
+import Data.Reflectable (class Reflectable)
 import Data.Traversable (scanl)
 import Data.Vector.Polymorphic (Vector2, (><))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
-import Effect.Class.Console (logShow)
+import Effect.Class.Console (log)
 import Parsing (Parser)
 import Parsing.Combinators (optional)
 import Parsing.String (char)
 import Parsing.String.Basic (intDecimal, whiteSpace)
+import Prim.Int (class Compare)
+import Prim.Ordering (GT)
 import QualifiedDo.Alt as Alt
 import QualifiedDo.Semigroupoid as Compose
 import Safe.Coerce (coerce)
+import Type.Proxy (Proxy(..))
 import Util (manyMonoid, newline, parseInput)
 
 type Pos = Vector2 (Additive Int)
@@ -57,24 +61,17 @@ moveCloser head tail = if tooFarAway head tail then move head tail else tail
   where
   move = lift2 \(Additive h) (Additive t) → Additive $ t + signum (h - t)
 
-type State1 = { head ∷ Pos, tail ∷ Pos, visited ∷ Array Pos }
+type State length = { rope ∷ Vect length Pos, visited ∷ Array Pos }
 
-solvePart1 ∷ Array Pos → Int
-solvePart1 = Compose.do
-  flip foldl (mempty ∷ State1) \state movement → do
-    let
-      head = state.head <> movement
-      tail = moveCloser head state.tail
-    { head, tail, visited: state.visited <> [ tail ] }
-  _.visited
-  nub
-  length
-
-type State2 = { rope ∷ Vect 10 Pos, visited ∷ Array Pos }
-
-solvePart2 ∷ Array Pos → Int
-solvePart2 = Compose.do
-  flip foldl (mempty ∷ State2) \state movement → do
+solve
+  ∷ ∀ length
+  . Reflectable length Int
+  ⇒ Compare length 0 GT
+  ⇒ Proxy length
+  → Array Pos
+  → Int
+solve _ = Compose.do
+  flip foldl (mempty ∷ State length) \state movement → do
     let
       ropeWithMovedHead = Vect.modify (term ∷ _ 0) (_ <> movement) state.rope
       rope = scanl moveCloser (Vect.head ropeWithMovedHead) ropeWithMovedHead
@@ -85,5 +82,10 @@ solvePart2 = Compose.do
 
 main ∷ Effect Unit
 main = launchAff_ do
-  parseInput day9Parser "input/9.txt" <#> solvePart1 >>= logShow
-  parseInput day9Parser "input/9.txt" <#> solvePart2 >>= logShow
+  parseInput day9Parser file <#> solve (Proxy ∷ _ 2) >>= logResult "Part 1"
+  parseInput day9Parser file <#> solve (Proxy ∷ _ 10) >>= logResult "Part 2"
+  parseInput day9Parser file <#> solve (Proxy ∷ _ 100)
+    >>= logResult "Just for fun (100 knots)"
+  where
+  logResult str result = log (str <> ": " <> show result)
+  file = "input/9.txt"
