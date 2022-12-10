@@ -3,13 +3,10 @@ module Day10 where
 import Prelude
 
 import Control.Alt ((<|>))
-import Control.Monad.State (StateT, execState, execStateT, get, gets, modify, modify_)
+import Control.Monad.State (StateT, execStateT, get, modify_)
 import Control.Monad.Writer (Writer, runWriter, tell)
-import Data.Array (elem, index)
-import Data.Array.NonEmpty (NonEmptyArray, reverse, (:))
-import Data.Array.NonEmpty as NEA
-import Data.Foldable (foldl, traverse_)
-import Data.Maybe (Maybe)
+import Data.Array (elem)
+import Data.Foldable (traverse_)
 import Data.Monoid.Additive (Additive(..))
 import Data.Tuple as Tuple
 import Effect (Effect)
@@ -19,10 +16,9 @@ import Parsing (Parser)
 import Parsing.Combinators.Array (many)
 import Parsing.String (string)
 import Parsing.String.Basic (intDecimal, whiteSpace)
-import QualifiedDo.Alt as Alt
 import Record as Record
 import Type.Proxy (Proxy(..))
-import Util (manyMonoid, newline, parseInput)
+import Util (newline, parseInput)
 
 data Instruction = AddX Int | Noop
 
