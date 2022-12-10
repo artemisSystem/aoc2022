@@ -15,19 +15,23 @@ to generate this file without the comments in this block.
   [ "aff"
   , "arrays"
   , "console"
+  , "control"
   , "effect"
   , "either"
   , "fast-vect"
   , "foldable-traversable"
   , "integers"
+  , "maybe"
   , "node-buffer"
   , "node-fs-aff"
   , "parsing"
   , "polymorphic-vectors"
   , "prelude"
   , "qualified-do"
+  , "record"
   , "safe-coerce"
   , "transformers"
+  , "tuples"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs" ]
